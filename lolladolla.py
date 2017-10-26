@@ -31,11 +31,11 @@ def pubkeyCheck(pubkey):
 
 class lolladollaServer(Controller):
 	"""Serve web requests for lolladollas"""
-	def trace(self,string):
+	def _trace(self,string):
 		print("lolladolla> "+string)
 	
 	def balance(self,pubkey=""):
-		self.trace(self,"balance check on "+pubkey)
+		self._trace(self,"balance check on "+pubkey)
 		pubkeyCheck(pubkey)
 		a=accounts[pubkey]
 		return "{'balance':%.2f, 'public_key':'%s', 'name':'%s'}" % (a.balance,a.pubkey,a.name)
@@ -49,7 +49,7 @@ class lolladollaServer(Controller):
 		return str
 	
 	def create(self,name="",pubkey="",signkey=""):
-		self.trace(self,"Create new account name: "+name+" pubkey: "+pubkey)
+		self._trace(self,"Create new account name: "+name+" pubkey: "+pubkey)
 		if not isinstance(name,str):
 			return "name needs to be a string";
 		if not isinstance(pubkey,str):
@@ -64,7 +64,7 @@ class lolladollaServer(Controller):
 		return "Created account"
 
 	def xfer(self,srcpubkey="",amount=0.0,destpubkey="",signature=""):
-		self.trace(self,"xfer "+amount+" from "+srcpubkey+" to "+destpubkey+" with signature "+signature)
+		self._trace(self,"xfer "+amount+" from "+srcpubkey+" to "+destpubkey+" with signature "+signature)
 		pubkeyCheck(srcpubkey)
 		pubkeyCheck(destpubkey)
 		amount=float(amount);
