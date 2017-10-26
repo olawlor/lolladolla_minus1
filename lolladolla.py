@@ -4,7 +4,7 @@
 #       or
 #    python3 lolladolla.py
 
-from circuits.web import Server, Controller
+from circuits.web import Server, Controller, Logger
 import shelve
 
 class lolladollaAccount:
@@ -19,7 +19,7 @@ class lolladollaAccount:
 accounts=shelve.open("lolladolla.accounts",'c',None,True)
 
 # Magically grant dollars to reserve account:
-#accounts["1001"].balance=10000000000.0;
+#accounts["9000"].balance=10000000000.0;
 #accounts.sync();
 
 def pubkeyCheck(pubkey):
@@ -101,7 +101,7 @@ class lolladollaServer(Controller):
 <form action="create" method="POST">
 <input type="text" name="name"> Account Name<br>
 <input type="text" name="pubkey"> Public Key<br>
-<input type="text" name="signkey"> Signing Key<br>
+<input type="password" name="signkey"> Signing Key<br>
 <br>
 <input type="submit" value="Create Account">
 </form>
@@ -109,7 +109,7 @@ class lolladollaServer(Controller):
 <h2>Transfer Funds</h2>
 <form action="xfer" method="POST">
 <input type="text" name="srcpubkey"> Source Account Public Key<br>
-<input type="text" name="signature"> Source Account Signing Key<br>
+<input type="password" name="signature"> Source Account Signing Key<br>
 <input type="text" name="destpubkey"> Destination Account Public Key<br>
 Transfer amount: <input type="text" name="amount">&#8356;<br>
 <br>
@@ -124,6 +124,7 @@ lolladolla server version -1.03
 
 app = Server(("0.0.0.0",8080))
 lolladollaServer().register(app)
+app += Logger()
 app.run()
 
 
