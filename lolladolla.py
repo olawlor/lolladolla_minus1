@@ -1,7 +1,5 @@
 # Manage lolladollas using a Python web server
 #  Run with
-#    python lolladolla.py
-#       or
 #    python3 lolladolla.py
 
 from circuits.web import Server, Controller, Logger

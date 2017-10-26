@@ -16,15 +16,11 @@ Transactions are signed by the originating account.
 == Software Description ==
 Set up dependencies:
 
-pip install circuits
-	or
 pip3 install circuits
 
 
 Start the server:
 
-python lolladolla.py
-	or
 python3 lolladolla.py
 
 
