@@ -4,6 +4,7 @@
 
 from circuits.web import Server, Controller, Logger
 import shelve
+import re
 
 class lolladollaAccount:
 	def __init__(self,name,pubkey,signkey,balance):
@@ -20,14 +21,29 @@ accounts=shelve.open("lolladolla.accounts",'c',None,True)
 #accounts["9000"].balance=10000000000.0;
 #accounts.sync();
 
-def pubkeyCheck(pubkey):
-	"""Check this account public key, and throw an error if it's not OK"""
+namePattern=re.compile('^[0-9a-zA-Z .]+$')
+def nameValid(name):
+	"""Check if this could be a valid username, and throw if not OK"""
+	if not isinstance(name,str):
+		raise ValueError("Name '"+name+"' needs to be a string (currently a "+type(str)+")")
+	if re.search(namePattern,name) is None:
+		raise ValueError("Name '"+name+"' does not match accepted pattern")
 
+pubkeyPattern=re.compile('^[0-9a-fA-F:]+$')
+def pubkeyValid(pubkey):
+	"""Check if this could be a valid public key, and throw if not OK"""
 	if not isinstance(pubkey,str):
 		raise ValueError("Pubkey '"+pubkey+"' needs to be a string (currently a "+type(str)+")")
+	if re.search(pubkeyPattern,pubkey) is None:
+		raise ValueError("Pubkey '"+pubkey+"' does not match accepted pattern")
+
+
+def pubkeyExists(pubkey):
+	"""Check this account public key already exists, and throw an error if it's not OK"""
+	pubkeyValid(pubkey)
 	if not pubkey in accounts:
 		raise ValueError("Pubkey '"+pubkey+"' not found in account list")
-	return
+	return accounts[pubkey]
 
 class lolladollaServer(Controller):
 	"""Serve web requests for lolladollas"""
@@ -35,9 +51,8 @@ class lolladollaServer(Controller):
 		print("lolladolla> "+string)
 	
 	def balance(self,pubkey=""):
-		self._trace(self,"balance check on "+pubkey)
-		pubkeyCheck(pubkey)
-		a=accounts[pubkey]
+		self._trace("balance check on "+pubkey)
+		a=pubkeyExists(pubkey)
 		return "{'balance':%.2f, 'public_key':'%s', 'name':'%s'}" % (a.balance,a.pubkey,a.name)
 
 	def dump(self):
@@ -49,11 +64,9 @@ class lolladollaServer(Controller):
 		return str
 	
 	def create(self,name="",pubkey="",signkey=""):
-		self._trace(self,"Create new account name: "+name+" pubkey: "+pubkey)
-		if not isinstance(name,str):
-			return "name needs to be a string";
-		if not isinstance(pubkey,str):
-			return "pubkey needs to be a string";
+		self._trace("Create new account name: "+name+" pubkey: "+pubkey)
+		nameValid(name);
+		pubkeyValid(pubkey);
 		if not isinstance(signkey,str):
 			return "signkey needs to be a string";
 		if pubkey in accounts:
@@ -64,16 +77,14 @@ class lolladollaServer(Controller):
 		return "Created account"
 
 	def xfer(self,srcpubkey="",amount=0.0,destpubkey="",signature=""):
-		self._trace(self,"xfer "+amount+" from "+srcpubkey+" to "+destpubkey+" with signature "+signature)
-		pubkeyCheck(srcpubkey)
-		pubkeyCheck(destpubkey)
+		self._trace("xfer "+amount+" from "+srcpubkey+" to "+destpubkey+" with signature "+signature)
+		src=pubkeyExists(srcpubkey)
+		dest=pubkeyExists(destpubkey)
 		amount=float(amount);
 		if not isinstance(amount,float):
 			return "Amount needs to be a float";
 		if not isinstance(signature,str):
 			return "Signature needs to be a string";
-		src=accounts[srcpubkey];
-		dest=accounts[destpubkey];
 		
 		# FIXME: use secret key encryption here?
 		if signature!=src.signkey:
@@ -115,7 +126,7 @@ Transfer amount: <input type="text" name="amount">&#8356;<br>
 </form>
 
 <hr>
-lolladolla server version -1.03
+lolladolla server version -1.04
 </body>
 </html>
 """
